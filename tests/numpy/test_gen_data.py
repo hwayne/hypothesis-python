@@ -58,6 +58,11 @@ def test_empty_dimensions_are_scalars(x):
     assert isinstance(x, np.dtype(float).type)
 
 
+@given(arrays(float, (1, 0, 1)))
+def test_can_handle_zero_dimensions(x):
+    assert x.shape == (1, 0, 1)
+
+
 @given(arrays(u'uint32', (5, 5)))
 def test_generates_unsigned_ints(x):
     assert (x >= 0).all()
@@ -73,7 +78,10 @@ def test_generates_and_minimizes():
 
 
 def test_can_minimize_large_arrays():
-    assert minimal(arrays(u'uint32', 500), np.any, timeout_after=60).sum() == 1
+    assert minimal(
+        arrays(u'uint32', 500), lambda x: np.any(x) and not np.all(x),
+        timeout_after=60
+    ).sum() == 1
 
 
 @flaky(max_runs=50, min_passes=1)
@@ -99,6 +107,16 @@ def test_can_create_arrays_of_tuples():
     arr = minimal(arrays(object, 10, st.tuples(st.integers(), st.integers())),
                   lambda x: all(t0 != t1 for t0, t1 in x))
     assert all(a in ((1, 0), (0, 1)) for a in arr)
+
+
+@given(arrays(object, (2, 2), st.tuples(st.integers())))
+def test_does_not_flatten_arrays_of_tuples(arr):
+    assert isinstance(arr[0][0], tuple)
+
+
+@given(arrays(object, (2, 2), st.lists(st.integers(), min_size=1, max_size=1)))
+def test_does_not_flatten_arrays_of_lists(arr):
+    assert isinstance(arr[0][0], list)
 
 
 @given(array_shapes())

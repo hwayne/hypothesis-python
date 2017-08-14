@@ -34,8 +34,6 @@ import numpy as np
 
 import hypothesis.strategies as st
 import hypothesis.extra.numpy as npst
-
-
 from hypothesis import settings
 from hypothesis.errors import UnsatisfiedAssumption
 from hypothesis.internal.conjecture.engine import ConjectureRunner
